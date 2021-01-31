@@ -351,10 +351,17 @@ int bsdiff(const uint8_t* old, int64_t oldsize, const uint8_t* new, int64_t news
 
 #if defined(BSDIFF_EXECUTABLE)
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <sys/types.h>
 
 #include <bzlib.h>
+#ifdef HAVE_ERR_H
 #include <err.h>
+#endif
+#include <p_err.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -393,7 +400,7 @@ int main(int argc,char *argv[])
 
 	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
 		that we never try to malloc(0) and get a NULL pointer */
-	if(((fd=open(argv[1],O_RDONLY,0))<0) ||
+	if(((fd=open(argv[1],O_RDONLY | O_BINARY,0))<0) ||
 		((oldsize=lseek(fd,0,SEEK_END))==-1) ||
 		((old=malloc(oldsize+1))==NULL) ||
 		(lseek(fd,0,SEEK_SET)!=0) ||
@@ -403,7 +410,7 @@ int main(int argc,char *argv[])
 
 	/* Allocate newsize+1 bytes instead of newsize bytes to ensure
 		that we never try to malloc(0) and get a NULL pointer */
-	if(((fd=open(argv[2],O_RDONLY,0))<0) ||
+	if(((fd=open(argv[2],O_RDONLY | O_BINARY,0))<0) ||
 		((newsize=lseek(fd,0,SEEK_END))==-1) ||
 		((new=malloc(newsize+1))==NULL) ||
 		(lseek(fd,0,SEEK_SET)!=0) ||
@@ -411,7 +418,7 @@ int main(int argc,char *argv[])
 		(close(fd)==-1)) err(1,"%s",argv[2]);
 
 	/* Create the patch file */
-	if ((pf = fopen(argv[3], "w")) == NULL)
+	if ((pf = fopen(argv[3], "wb")) == NULL)
 		err(1, "%s", argv[3]);
 
 	/* Write header (signature+newsize)*/
